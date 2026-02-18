@@ -1,33 +1,32 @@
 /*
-Week 5 — Example 5: Side-Scroller Platformer with JSON Levels + Modular Camera
+Week 5 — Example 4: Data-driven world with JSON + Smooth Camera
 
 Course: GBDA302 | Instructors: Dr. Karen Cochrane & David Han
 Date: Feb. 12, 2026
 
-Move: WASD/Arrows | Jump: Space
+Move: WASD/Arrows
 
 Learning goals:
-- Build a side-scrolling platformer using modular game systems
-- Load complete level definitions from external JSON (LevelLoader + levels.json)
-- Separate responsibilities across classes (Player, Platform, Camera, World)
-- Implement gravity, jumping, and collision with platforms
-- Use a dedicated Camera2D class for smooth horizontal tracking
-- Support multiple levels and easy tuning through data files
-- Explore scalable project architecture for larger games
+- Extend the JSON-driven world to include camera parameters
+- Implement smooth camera follow using interpolation (lerp)
+- Separate camera behavior from player/world logic
+- Tune motion and feel using external data instead of hard-coded values
+- Maintain player visibility with soft camera clamping
+- Explore how small math changes affect “game feel”
 */
 
 const VIEW_W = 800;
 const VIEW_H = 480;
 
-let allLevelsData;
-let levelIndex = 0;
-
+let worldData;
 let level;
 let player;
-let cam;
+
+let camX = 0;
+let camY = 0;
 
 function preload() {
-  allLevelsData = loadJSON("levels.json"); // levels.json beside index.html [web:122]
+  worldData = loadJSON("world.json"); // load JSON before setup [web:122]
 }
 
 function setup() {
@@ -35,67 +34,51 @@ function setup() {
   textFont("sans-serif");
   textSize(14);
 
-  cam = new Camera2D(width, height);
-  loadLevel(levelIndex);
-}
+  level = new WorldLevel(worldData);
 
-function loadLevel(i) {
-  level = LevelLoader.fromLevelsJson(allLevelsData, i);
+  const start = worldData.playerStart ?? { x: 300, y: 300, speed: 3 };
+  player = new Player(start.x, start.y, start.speed);
 
-  player = new BlobPlayer();
-  player.spawnFromLevel(level);
-
-  cam.x = player.x - width / 2;
-  cam.y = 0;
-  cam.clampToWorld(level.w, level.h);
+  camX = player.x - width / 2;
+  camY = player.y - height / 2;
 }
 
 function draw() {
-  // --- game state ---
-  player.update(level);
+  player.updateInput();
 
-  // Fall death → respawn
-  if (player.y - player.r > level.deathY) {
-    loadLevel(levelIndex);
-    return;
-  }
+  // Keep player inside world
+  player.x = constrain(player.x, 0, level.w);
+  player.y = constrain(player.y, 0, level.h);
 
-  // --- view state (data-driven smoothing) ---
-  cam.followSideScrollerX(player.x, level.camLerp);
-  cam.y = 0;
-  cam.clampToWorld(level.w, level.h);
+  // Target camera (center on player)
+  let targetX = player.x - width / 2;
+  let targetY = player.y - height / 2;
 
-  // --- draw ---
-  cam.begin();
+  // Clamp target camera safely
+  const maxCamX = max(0, level.w - width);
+  const maxCamY = max(0, level.h - height);
+  targetX = constrain(targetX, 0, maxCamX);
+  targetY = constrain(targetY, 0, maxCamY);
+
+  // Smooth follow using the JSON knob
+  const camLerp = level.camLerp; // ← data-driven now
+  camX = lerp(camX, targetX, camLerp);
+  camY = lerp(camY, targetY, camLerp);
+
+  level.drawBackground();
+
+  push();
+  translate(-camX, -camY);
   level.drawWorld();
-  player.draw(level.theme.blob);
-  cam.end();
+  player.draw();
+  pop();
 
-  // HUD
-  fill(0);
-  noStroke();
-  text(level.name + " (Example 5)", 10, 18);
-  text("A/D or ←/→ move • Space/W/↑ jump • Fall = respawn", 10, 36);
-  text("camLerp(JSON): " + level.camLerp + "  world.w: " + level.w, 10, 54);
-  text("cam: " + cam.x + ", " + cam.y, 10, 90);
-  const p0 = level.platforms[0];
-  text(`p0: x=${p0.x} y=${p0.y} w=${p0.w} h=${p0.h}`, 10, 108);
-
-  text(
-    "platforms: " +
-      level.platforms.length +
-      " start: " +
-      level.start.x +
-      "," +
-      level.start.y,
-    10,
-    72,
-  );
+  level.drawHUD(player, camX, camY);
 }
 
 function keyPressed() {
-  if (key === " " || key === "W" || key === "w" || keyCode === UP_ARROW) {
-    player.tryJump();
+  if (key === "r" || key === "R") {
+    const start = worldData.playerStart ?? { x: 300, y: 300, speed: 3 };
+    player = new Player(start.x, start.y, start.speed);
   }
-  if (key === "r" || key === "R") loadLevel(levelIndex);
 }

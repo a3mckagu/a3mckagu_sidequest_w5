@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "world": {
+    "w": 2400,
+    "h": 1600,
+    "bg": [235, 235, 235],
+    "gridStep": 160
+  },
+  "camera": {
+    "lerp": 0.12
+  },
+  "playerStart": {
+    "x": 300,
+    "y": 300,
+    "speed": 3
+  },
+  "obstacles": [{ "x": 40, "y": 40, "w": 80, "h": 80, "r": 10 }]
+}

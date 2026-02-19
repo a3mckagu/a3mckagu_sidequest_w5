@@ -3,7 +3,7 @@
   "world": {
     "w": 2400,
     "h": 1600,
-    "bg": [235, 235, 235],
+    "bg": "assets/bg.jpeg",
     "gridStep": 160
   },
   "camera": {
@@ -11,8 +11,8 @@
   },
   "playerStart": {
     "x": 300,
-    "y": 300,
-    "speed": 3
+    "y": 800,
+    "speed": 3.9
   },
   "obstacles": [{ "x": 40, "y": 40, "w": 80, "h": 80, "r": 10 }]
 }

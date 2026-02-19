@@ -35,10 +35,10 @@ Learning Goals:
 
 ## Assets
 
-assets/bg.jpeg - illstration for the background environemnt (pool floor)
-assets/ducky.png - illustration for a duck (a yellow rubberduck like shape)
-assets/lifebuoy.png - illustration for lifebuoy (red and white circles)
-assets/swan.png - illustration for the player character (a swan with wings expanded)
+- assets/bg.jpeg - illstration for the background environemnt (pool floor)
+- assets/ducky.png - illustration for a duck (a yellow rubberduck like shape)
+- assets/lifebuoy.png - illustration for lifebuoy (red and white circles)
+- assets/swan.png - illustration for the player character (a swan with wings expanded)
 
 ---
 
